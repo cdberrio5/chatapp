@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificaciones Matrix</title>
+    <style>
+        /* Estilos CSS */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        #matrixCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        #notificationContainer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #00ff00;
+            padding: 20px;
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+        }
+
+        #notificationContainer.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas"></canvas>
+    <div id="notificationContainer" class="hidden">
+        <p id="notificationMessage"></p>
+    </div>
+
+    <!-- Incluye la biblioteca de Socket.io -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // JavaScript para el efecto "Matrix" y las notificaciones
+
+        // Configuración del lienzo y contexto
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Ajuste del tamaño del lienzo
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Caracteres utilizados en el efecto "Matrix"
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        // Función para dibujar el efecto "Matrix"
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#00ff00';
+            ctx.font = `${fontSize}px monospace`;
+
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters.charAt(Math.floor(Math.random() * letters.length));
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+
+        // Intervalo para actualizar el lienzo
+        setInterval(drawMatrix, 33);
+
+        // Configuración de Socket.io para recibir notificaciones
+        const socket = io();
+
+        socket.on('webhookNotification', (data) => {
+            showNotification(data.msg);
+        });
+
+        // Función para mostrar la notificación
+        function showNotification(message) {
+            const notificationContainer = document.getElementById('notificationContainer');
+            const notificationMessage = document.getElementById('notificationMessage');
+
+            notificationMessage.textContent = message;
+            notificationContainer.classList.add('show');
+
+            setTimeout(() => {
+                notificationContainer.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
