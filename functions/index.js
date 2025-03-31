@@ -7,6 +7,24 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCx7P8bwHgfb6cqsXsvKf8DxMzZJLaJVMY",
+  authDomain: "chatapp-a1cda.firebaseapp.com",
+  projectId: "chatapp-a1cda",
+  storageBucket: "chatapp-a1cda.firebasestorage.app",
+  messagingSenderId: "850149082225",
+  appId: "1:850149082225:web:5ca4596642cb6cbcaa07d0"
+};
+
+// Initialize Firebase
+const firebase = initializeApp(firebaseConfig);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', (req, res) => {
