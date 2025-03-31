@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat en Tiempo Real</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 400px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #chat {
+            display: none;
+            flex-direction: column;
+            height: 400px;
+        }
+        #messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 300px;
+        }
+        .message {
+            padding: 5px;
+            margin: 5px;
+            border-radius: 5px;
+            max-width: 80%;
+        }
+        .own {
+            background: #d1e7dd;
+            align-self: flex-end;
+            text-align: right;
+        }
+        .other {
+            background: #f8d7da;
+            align-self: flex-start;
+            text-align: left;
+        }
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="login">
+        <h2>Ingrese su nombre</h2>
+        <input type="text" id="nameInput" placeholder="Nombre">
+        <button onclick="joinChat()">Confirmar</button>
+    </div>
+    <div class="container" id="chat">
+        <h2>Chat en Tiempo Real</h2>
+        <div id="messages"></div>
+        <div class="input-container">
+            <input type="text" id="messageInput" placeholder="Escribe un mensaje" onkeypress="pressEnter(event)">
+            <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+    <script>
+        const socket = io('https://2z1jbtx7-3000.use2.devtunnels.ms/');
+        let userName = '';
+
+        function joinChat() {
+            userName = document.getElementById('nameInput').value.trim();
+            if (!userName) return;
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('chat').style.display = 'flex';
+            socket.emit('join', userName);
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (!message) return;
+            const time = new Date().toLocaleTimeString();
+            const msgObj = { name: userName, message, time };
+            socket.emit('message', msgObj);
+            addMessage(msgObj, true);
+            document.getElementById('messageInput').value = '';
+        }
+
+        function addMessage({ name, message, time }, isOwn) {
+            const messages = document.getElementById('messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+            msgDiv.innerHTML = `<strong>${name}</strong>: ${message} <br><small>${time}</small>`;
+            messages.appendChild(msgDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        socket.on('message', (msgObj) => {
+            if (msgObj.name !== userName) addMessage(msgObj, false);
+        });
+
+        function pressEnter(e) {
+            if(e.key == "Enter") {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
