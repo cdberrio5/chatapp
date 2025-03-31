@@ -10,6 +10,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+app.use(express.json());
+
 // 🔹 Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -18,7 +20,7 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.post("/", (req, res) => {
+app.post("/webhook", (req, res) => {
     const webhookData = req.body;
   
     // Convertir el objeto a un string JSON con formato legible
@@ -33,7 +35,17 @@ app.post("/", (req, res) => {
       console.log("Datos del webhook guardados correctamente.");
       res.status(200).send("Webhook recibido y datos guardados.");
     });
-  });
+});
+
+app.get("/descargar-log", (req, res) => {
+    const file = `${__dirname}/log.json`;
+    res.download(file, "log.json", (err) => {
+      if (err) {
+        console.error("Error al enviar el archivo:", err);
+        res.status(500).send("Error al enviar el archivo.");
+      }
+    });
+});
 
 // 🔹 Manejo de WebSockets
 io.on("connection", (socket) => {
