@@ -24,6 +24,13 @@
             height: 100%;
         }
 
+        .counter {
+            font-size: 50px;
+            top: 25%;
+            left: 50%;
+            color: #00ff00;
+        }
+
         #notificationContainer {
             position: fixed;
             top: 50%;
@@ -47,6 +54,7 @@
 </head>
 <body>
     <canvas id="matrixCanvas"></canvas>
+    <div class="counter" id="counter"></div>
     <div id="notificationContainer" class="hidden">
         <p id="notificationMessage"></p>
     </div>
@@ -99,6 +107,8 @@
             showNotification(data.msg);
         });
 
+        var counter = 0;
+
         // Función para mostrar la notificación
         function showNotification(message) {
             const notificationContainer = document.getElementById('notificationContainer');
@@ -106,6 +116,10 @@
 
             notificationMessage.textContent = message;
             notificationContainer.classList.add('show');
+
+            counter++;
+
+            document.getElementById("counter").innerHTML = counter;
 
             setTimeout(() => {
                 notificationContainer.classList.remove('show');
